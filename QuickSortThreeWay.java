@@ -128,21 +128,38 @@ public class QuickSortThreeWay {
                     "uso correto: java QuickSortThreeWay arquivoEntrada.txt arquivoSaida.txt");
             return;
         }
-        //deverá ter o arquivo de entrada e o de saída como parâmetros
+
         String arquivoEntrada = args[0];
         String arquivoSaida = args[1];
 
         try {
-            // lê os números do arquivo de entrada
+            // Mede a memória inicial
+            long memoriaInicial = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+
+            // Marca o tempo de início
+            long inicio = System.currentTimeMillis();
+
+            // Lê os números do arquivo de entrada
             int[] numeros = lerNumerosDoArquivo(arquivoEntrada);
 
-            // ordena os números com QuickSort Three-way
+            // Ordena com QuickSort Three-Way
             quickSort3Way(numeros);
 
-            // mapeia os números ordenados para o arquivo de saída
+            // Escreve no arquivo de saída
             escreverNumerosNoArquivo(numeros, arquivoSaida);
 
+            // Calcula tempo de execução
+            long fim = System.currentTimeMillis();
+            long tempoExecucao = fim - inicio;
+
+            // Calcula memória utilizada (final - inicial) e converte para MB
+            long memoriaFinal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+            long memoriaUtilizadaBytes = memoriaFinal - memoriaInicial;
+            double memoriaUtilizadaMB = memoriaUtilizadaBytes / (1024.0 * 1024.0);
+
             System.out.println("Ordenação concluída. Resultado salvo em: " + arquivoSaida);
+            System.out.println("Tempo de execução: " + tempoExecucao + " ms");
+            System.out.printf("Memória utilizada: %.2f MB%n", memoriaUtilizadaMB);
 
         } catch (IOException e) {
             System.out.println("Erro ao acessar arquivos: " + e.getMessage());
