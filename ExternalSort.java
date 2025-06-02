@@ -13,9 +13,19 @@ import java.io.*;
  * onde n é o número de elementos e M é o número de elementos que cabem na memória
  */
 public class ExternalSort {
-    private static long totalMemoriaUtilizada = 0;    // Toda a memoria utilizada pelo programa será incrementada nessa variavel
+    private static long memoriaMaximaUtilizada = 0;    // Memória máxima utilizada durante a execução
     private static long tempoInicio;                  // O inicio do tempo de execução
     private static long tempoFim;                     // O final do tempo de execução
+
+    /**
+     * Atualiza a memória máxima utilizada durante a execução
+     */
+    private static void atualizarMemoriaUtilizada() {
+        long memoriaAtual = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        if (memoriaAtual > memoriaMaximaUtilizada) {
+            memoriaMaximaUtilizada = memoriaAtual;
+        }
+    }
 
     /**
      * Calcula o tamanho ideal dos blocos para divisão do arquivo.
@@ -51,7 +61,6 @@ public class ExternalSort {
         return tamanhoBloco;
     }
 
-
     /**
      * Fase de divisão e ordenação inicial:
      * 1. Lê o arquivo em blocos que cabem na memória
@@ -80,25 +89,18 @@ public class ExternalSort {
                 tamanhoBlocoAtual += numero.length() * 2 + 40;
 
                 if (tamanhoBlocoAtual >= tamanhoBloco) {
-                    // Medir memória antes e depois de ordenar
-                    long memoriaAntes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
                     File arquivoTemp = ordenarESalvar(listaTemporaria, comparador);
-                    long memoriaDepois = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                    totalMemoriaUtilizada += (memoriaDepois - memoriaAntes);
-
                     arquivos.add(arquivoTemp);
                     listaTemporaria.clear();
                     tamanhoBlocoAtual = 0;
+                    atualizarMemoriaUtilizada();
                 }
             }
 
             if (!listaTemporaria.isEmpty()) {
-                long memoriaAntes = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
                 File arquivoTemp = ordenarESalvar(listaTemporaria, comparador);
-                long memoriaDepois = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-                totalMemoriaUtilizada += (memoriaDepois - memoriaAntes);
-
                 arquivos.add(arquivoTemp);
+                atualizarMemoriaUtilizada();
             }
         } finally {
             leitor.close();
@@ -207,7 +209,7 @@ public class ExternalSort {
         /**
          * Cria uma fila de prioridade (min-heap) para uma mesclagem mais eficiente
          * PriorityQueue: Estrutura que sempre retorna o menor elemento (min-heap).
-         * Ex: Se tivermos [3,1,2], o metodo poll() remove e retorna 1 primeiro.
+         * Ex: Se tivermos [3,1,2], o metodo poll() remove e retorna o 1 primeiro.
          */
         PriorityQueue<BufferArquivoBinario> filaPrioridade = new PriorityQueue<>(11,
                 new Comparator<BufferArquivoBinario>() {
@@ -217,9 +219,6 @@ public class ExternalSort {
                     }
                 });
 
-        // Medição inicial de memória utilizada antes do processo de mesclagem
-        long memoriaAntesMesclagem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
         // Adiciona cada arquivo temporário à fila de prioridade
         for (File arquivo : arquivos) {
             // Cria um buffer para ler o arquivo
@@ -228,6 +227,7 @@ public class ExternalSort {
             if(!buffer.vazio()) {
                 filaPrioridade.add(buffer);
             }
+            atualizarMemoriaUtilizada();
         }
 
         // Prepara o escritor para o arquivo de saída final
@@ -257,6 +257,7 @@ public class ExternalSort {
                 // Se o buffer ainda tem elementos, recoloca na fila
                 if(!buffer.vazio()) {
                     filaPrioridade.add(buffer);
+                    atualizarMemoriaUtilizada();
                 } else {
                     // Se o buffer esvaziou, fecha e deleta o arquivo temporário
                     buffer.fechar();
@@ -272,11 +273,6 @@ public class ExternalSort {
             }
         }
 
-        // Calcula a memória utilizada durante a mesclagem e atualiza o total
-        long memoriaDepoisMesclagem = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-        totalMemoriaUtilizada += (memoriaDepoisMesclagem - memoriaAntesMesclagem);
-
-        // Retorna o total de linhas processadas
         return contadorLinhas;
     }
 
@@ -295,7 +291,7 @@ public class ExternalSort {
          * Como os dados são lidos como texto, é mais vantajoso trabalhar diretamente com Strings para evitar
          * conversões desnecessarias e ser melhor de se manipular, por isso,
          * foi utilizado Comparator<String> e não Comparator<Integer>
-        *
+         *
          * */
         Comparator<String> comparador = new Comparator<String>() {
             public int compare(String num1, String num2) {
@@ -310,11 +306,10 @@ public class ExternalSort {
         tempoFim = System.currentTimeMillis();
         long tempoTotal = tempoFim - tempoInicio;
 
-
         System.out.println("\nEstatísticas da Ordenação:");
         System.out.println("-------------------------");
         System.out.println("Tempo total de execução: " + tempoTotal + " ms");
-        System.out.println("Memória total utilizada: " + (totalMemoriaUtilizada / (1024 * 1024)) + " MB");
+        System.out.println("Memória máxima utilizada: " + (memoriaMaximaUtilizada / (1024 * 1024)) + " MB");
         System.out.println("Número de arquivos temporários criados: " + arquivosTemp.size());
 
         // apagar os arquivos temporários

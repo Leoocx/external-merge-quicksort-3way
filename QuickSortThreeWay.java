@@ -9,23 +9,31 @@ import java.util.Random;
  * 2. os dados no arquivoEntrada.txt serão mapeados em um array
  * 3. o array local será ordenado utilizando o QuickSort Three-Way
  * 4. os dados do array já ordenado serão escritos no arquivoSaida.txt
-
-
+ *
  * Características do algorítimo:
  *  - é recursivo
  *  - utiliza a mesma estratégia do MergeSort de dividir para conquistar
  *  - não possui estabilidade
  *  - faz ordenação in-place
  *  - diferente do QuickSort convencional, evita reordenação de elementos iguais ao pivô
-
-
+ *
  * Complexidade de tempo:
  *  - O(nlog(n)) - melhor caso
  *  - O(n log(n)) - caso médio
  *  - O(n²) - pior caso
-
-  **/
+ **/
 public class QuickSortThreeWay {
+    private static long memoriaMaximaUtilizada = 0;
+
+    /**
+     * Atualiza a memória máxima utilizada durante a execução
+     */
+    private static void atualizarMemoriaUtilizada() {
+        long memoriaAtual = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
+        if (memoriaAtual > memoriaMaximaUtilizada) {
+            memoriaMaximaUtilizada = memoriaAtual;
+        }
+    }
 
     /**
      * Implementação da classe principal: fase de ordenação
@@ -38,6 +46,7 @@ public class QuickSortThreeWay {
             int j = rand.nextInt(i + 1);
             swap(arr, i, j); // função auxiliar
         }
+        atualizarMemoriaUtilizada();
     }
 
     //aplicação do QuickSort Three-Way
@@ -67,6 +76,7 @@ public class QuickSortThreeWay {
                 i++; // elemento igual ao pivô, apenas avança
             }
         }
+        atualizarMemoriaUtilizada();
 
         // recursão para subarrays menores e maiores
         sort(arr, low, lt - 1);  // partição menor que o pivô
@@ -86,7 +96,6 @@ public class QuickSortThreeWay {
 
     // função responsável por ler o arquivo de entrada
     private static int[] lerNumerosDoArquivo(String caminho) throws IOException {
-
         BufferedReader leitor = new BufferedReader(new FileReader(caminho));
         String linha = leitor.readLine();
         leitor.close();
@@ -101,12 +110,12 @@ public class QuickSortThreeWay {
         for (int i = 0; i < partes.length; i++) {
             numeros[i] = Integer.parseInt(partes[i]);
         }
+        atualizarMemoriaUtilizada();
         return numeros;
     }
 
     // função para escrever os números no arquivo de saída
     private static void escreverNumerosNoArquivo(int[] numeros, String caminho) throws IOException {
-
         BufferedWriter escritor = new BufferedWriter(new FileWriter(caminho));
 
         for (int i = 0; i < numeros.length; i++) {
@@ -117,6 +126,7 @@ public class QuickSortThreeWay {
         }
         escritor.newLine();
         escritor.close();
+        atualizarMemoriaUtilizada();
     }
 
     /**
@@ -133,9 +143,6 @@ public class QuickSortThreeWay {
         String arquivoSaida = args[1];
 
         try {
-            // Mede a memória inicial
-            long memoriaInicial = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-
             // Marca o tempo de início
             long inicio = System.currentTimeMillis();
 
@@ -152,19 +159,15 @@ public class QuickSortThreeWay {
             long fim = System.currentTimeMillis();
             long tempoExecucao = fim - inicio;
 
-            // Calcula memória utilizada (final - inicial) e converte para MB
-            long memoriaFinal = Runtime.getRuntime().totalMemory() - Runtime.getRuntime().freeMemory();
-            long memoriaUtilizadaBytes = memoriaFinal - memoriaInicial;
-            double memoriaUtilizadaMB = memoriaUtilizadaBytes / (1024.0 * 1024.0);
+            // Converte memória máxima utilizada para MB
+            double memoriaUtilizadaMB = memoriaMaximaUtilizada / (1024.0 * 1024.0);
 
             System.out.println("Ordenação concluída. Resultado salvo em: " + arquivoSaida);
             System.out.println("Tempo de execução: " + tempoExecucao + " ms");
-            System.out.printf("Memória utilizada: %.2f MB%n", memoriaUtilizadaMB);
+            System.out.printf("Memória máxima utilizada: %.2f MB%n", memoriaUtilizadaMB);
 
         } catch (IOException e) {
             System.out.println("Erro ao acessar arquivos: " + e.getMessage());
         }
     }
 }
-    
-

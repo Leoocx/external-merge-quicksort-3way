@@ -5,13 +5,13 @@ import java.util.Random;
 public class GerarDadosRefac {
     public static void main(String[] args) throws IOException {
         String arquivoSaida = "arquivoEntrada.txt";
-        int totalNumeros =1_500_000; //ajustar conforme o necessário
+        int totalNumeros =2_200_000; //ajustar conforme o necessário
 
         try (BufferedWriter writer = new BufferedWriter(new FileWriter(arquivoSaida))) {
             Random rand = new Random();
 
             for (int i = 1; i <= totalNumeros; i++) {
-                int numero = rand.nextInt(1500000);
+                int numero = rand.nextInt(10);
                 writer.write(Integer.toString(numero));
 
                 if (i < totalNumeros) {
