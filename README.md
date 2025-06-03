@@ -70,3 +70,8 @@ java QuickSortThreeWay arquivoEntrada.txt arquivoSaida.txt
 | ------------- |:-------------:|
 |caso médio|O(n log n)|
 |pior caso|O(n)|
+
+## Links
+
+Análise de implementação -> [apresentação](https://www.canva.com/design/DAGpPGXqRxs/DYyY395FfRwULCrMwQIbxw/edit?utm_content=DAGpPGXqRxs&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+
